@@ -1,0 +1,36 @@
+name: 🚀 نشر نظام المستشفيات إلى InfinityFree
+
+on:
+  push:
+    branches: [ main ]   # أو master إذا كان فرعك الرئيسي master
+  workflow_dispatch:      # يتيح لك تشغيله يدوياً من تبويب Actions
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 📥 تحميل الكود من المستودع
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: 🔧 تجهيز الملفات (إزالة الملفات غير الضرورية)
+        run: |
+          rm -rf .git
+          rm -rf .github
+          rm -f .gitignore README.md LICENSE
+          # يمكنك إضافة أي ملفات أخرى تريد استبعادها
+
+      - name: 📤 رفع الملفات عبر FTP
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.4
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          local-dir: ./
+          server-dir: ${{ secrets.REMOTE_DIR }}
+          dangerous-clean-slate: true   # يمسح كل الملفات القديمة في htdocs قبل الرفع
+          retries: 3                     # يعيد المحاولة 3 مرات عند فشل الاتصال
+          timeout: 60000                  # مهلة 60 ثانية
+          protocol: ftp
+          log-level: verbose
