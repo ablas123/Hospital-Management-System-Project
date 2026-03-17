@@ -5,5 +5,11 @@ services:
     repo: https://github.com/ablas123/Hospital-Management-System-Project
     plan: free
     envVars:
-      - key: DATABASE_URL
-        value: mysql://if0_41411754:ablasmoh@sql200.infinityfree.com:3306/if0_41411754_ablas
+      - key: DATABASE_HOST
+        value: sql200.infinityfree.com
+      - key: DATABASE_USER
+        value: if0_41411754
+      - key: DATABASE_PASSWORD
+        value: ablasmoh
+      - key: DATABASE_NAME
+        value: if0_41411754_ablas
