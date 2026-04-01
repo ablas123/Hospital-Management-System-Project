@@ -5,7 +5,7 @@ $user = getenv('DB_USER') ?: '4Q3JgFwtV72XTzm.root';
 $pass = getenv('DB_PASS') ?: 'hCCzJBE3Ko33HuTW';
 $dbname = getenv('DB_NAME') ?: 'hospital_db';
 
-$ssl_ca = __DIR__ . '/ca.pem';   // الملف موجود في نفس مجلد database
+$ssl_ca = __DIR__ . '/ca.pem';   // الملف موجود في نفس المجلد
 
 $conn = mysqli_init();
 mysqli_ssl_set($conn, NULL, NULL, $ssl_ca, NULL, NULL);
