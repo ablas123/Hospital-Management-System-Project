@@ -13,32 +13,31 @@ if (!mysqli_real_connect($conn, $host, $user, $pass, '', $port, NULL, MYSQLI_CLI
     die("Connection failed: " . mysqli_connect_error());
 }
 
-// إنشاء قاعدة البيانات إن لم تكن موجودة
-$conn->query("CREATE DATABASE IF NOT EXISTS `$dbname`");
+// التحقق من وجود جدول setting (علامة على اكتمال الاستيراد)
 $conn->select_db($dbname);
-
-// التحقق من وجود جدول setting (أي جدول للتأكد من وجود الجداول)
 $check = $conn->query("SHOW TABLES LIKE 'setting'");
 if ($check && $check->num_rows > 0) {
-    // الجداول موجودة بالفعل، لا حاجة لإعادة الاستيراد
-    echo "Tables already exist. Skipping import.\n";
+    echo "Database already initialized. Skipping.\n";
     $conn->close();
     return;
 }
 
-// مسار ملف SQL الموجود في المشروع
+// إذا وصلنا إلى هنا، ننظف قاعدة البيانات ونعيد استيرادها
+$conn->query("DROP DATABASE IF EXISTS `$dbname`");
+$conn->query("CREATE DATABASE `$dbname`");
+$conn->select_db($dbname);
+
 $sqlFile = __DIR__ . '/admin/System_backup_file/backup_system1740888810-c25239e543c4328636c1d292120d664e.sql';
 if (!file_exists($sqlFile)) {
     die("SQL file not found at: $sqlFile");
 }
 
-// قراءة الملف وتنفيذ الاستعلامات
 $sql = file_get_contents($sqlFile);
 if ($sql === false) {
     die("Could not read SQL file.");
 }
 
-// تقسيم الاستعلامات على ;
+// تنفيذ الاستعلامات (تجاهل التعليقات)
 $queries = array_filter(array_map('trim', explode(';', $sql)));
 foreach ($queries as $query) {
     if (!empty($query) && !preg_match('/^--/', $query)) {
