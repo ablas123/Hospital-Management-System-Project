@@ -14,32 +14,24 @@ cp "$SQL_FILE" "$TEMP_SQL"
 
 echo "🔧 Fixing SQL file for MySQL 8.0 compatibility..."
 
-# 1. إصلاح القيم الافتراضية
+# Fix datetime columns: replace DEFAULT current_timestamp() with DEFAULT CURRENT_TIMESTAMP
 sed -i 's/datetime NOT NULL DEFAULT current_timestamp()/datetime NOT NULL DEFAULT CURRENT_TIMESTAMP/g' "$TEMP_SQL"
+
+# Fix date columns: replace DEFAULT current_timestamp() with DEFAULT (CURRENT_DATE)
 sed -i 's/date NOT NULL DEFAULT current_timestamp()/date NOT NULL DEFAULT (CURRENT_DATE)/g' "$TEMP_SQL"
+
+# Fix time columns: replace DEFAULT current_timestamp() with DEFAULT "00:00:00"
 sed -i 's/time NOT NULL DEFAULT current_timestamp()/time NOT NULL DEFAULT "00:00:00"/g' "$TEMP_SQL"
-
-# 2. إزالة أي عبارة USE
-sed -i -E 's/^[[:space:]]*USE[[:space:]]+[`]?[a-zA-Z0-9_]+[`]?[[:space:]]*;//g' "$TEMP_SQL"
-
-# 3. إعادة ترتيب الملف: استخراج كل CREATE TABLE أولاً ثم INSERT
-# نقوم بإنشاء ملفين مؤقتين
-grep -i '^CREATE TABLE' "$TEMP_SQL" > /tmp/create.sql
-grep -i '^INSERT INTO' "$TEMP_SQL" > /tmp/insert.sql
-cat /tmp/create.sql /tmp/insert.sql > "$TEMP_SQL"
 
 mysql_cmd="mysql --host=$DB_HOST --port=$DB_PORT --user=$DB_USER --password=$DB_PASS --ssl-ca=$SSL_CA"
 
-# التحقق من وجود الجداول
 if $mysql_cmd -e "USE $DB_NAME; SHOW TABLES LIKE 'setting';" 2>/dev/null | grep -q setting; then
     echo "✅ Database already initialized. Skipping import."
 else
     echo "📥 Initializing database (fresh install)..."
     $mysql_cmd -e "DROP DATABASE IF EXISTS $DB_NAME; CREATE DATABASE $DB_NAME;"
-    echo "📤 Importing data..."
-    $mysql_cmd "$DB_NAME" < "$TEMP_SQL"
+    $mysql_cmd $DB_NAME < "$TEMP_SQL"
     echo "✅ Database initialization completed."
 fi
 
-# بدء Apache
 apache2-foreground
