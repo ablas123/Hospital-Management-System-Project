@@ -1,4 +1,4 @@
--- (المحتوى المعدل بالكامل – يعمل مع MySQL 8.0)
+-- (المحتوى المعدل بالكامل – يعمل مع MySQL 8.0 / TiDB Cloud)
 DROP TABLE IF EXISTS about_page;
 
 CREATE TABLE `about_page` (
@@ -95,7 +95,7 @@ CREATE TABLE `bed_allocate` (
 
 INSERT INTO bed_allocate VALUES("6","10","7","2024-11-28 08:45:43","2024-12-05 08:45:43");
 INSERT INTO bed_allocate VALUES("7","11","5","2003-11-29 01:00:54","2024-11-28 09:22:54");
-INSERT INTO bed_allocate VALUES("8","0","0","0000-00-00 00:00:00","0000-00-00 00:00:00");
+INSERT INTO bed_allocate VALUES("8","0","0",CURRENT_TIMESTAMP(),CURRENT_TIMESTAMP());
 INSERT INTO bed_allocate VALUES("9","19","18","2025-02-12 02:52:00","2025-01-14 05:53:00");
 INSERT INTO bed_allocate VALUES("10","25","19","2025-01-16 17:38:00","2025-01-18 17:41:00");
 INSERT INTO bed_allocate VALUES("11","26","20","2025-01-21 15:37:00","2025-01-21 16:38:00");
