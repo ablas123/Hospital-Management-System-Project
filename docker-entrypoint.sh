@@ -14,14 +14,11 @@ cp "$SQL_FILE" "$TEMP_SQL"
 
 echo "🔧 Fixing SQL file for MySQL 8.0 compatibility..."
 
-# Fix datetime columns: replace DEFAULT current_timestamp() with DEFAULT CURRENT_TIMESTAMP
+# إصلاح كل الأخطاء مرة واحدة
 sed -i 's/datetime NOT NULL DEFAULT current_timestamp()/datetime NOT NULL DEFAULT CURRENT_TIMESTAMP/g' "$TEMP_SQL"
-
-# Fix date columns: replace DEFAULT current_timestamp() with DEFAULT (CURRENT_DATE)
 sed -i 's/date NOT NULL DEFAULT current_timestamp()/date NOT NULL DEFAULT (CURRENT_DATE)/g' "$TEMP_SQL"
-
-# Fix time columns: replace DEFAULT current_timestamp() with DEFAULT "00:00:00"
 sed -i 's/time NOT NULL DEFAULT current_timestamp()/time NOT NULL DEFAULT "00:00:00"/g' "$TEMP_SQL"
+sed -i '/^USE /d' "$TEMP_SQL"
 
 mysql_cmd="mysql --host=$DB_HOST --port=$DB_PORT --user=$DB_USER --password=$DB_PASS --ssl-ca=$SSL_CA"
 
@@ -30,7 +27,7 @@ if $mysql_cmd -e "USE $DB_NAME; SHOW TABLES LIKE 'setting';" 2>/dev/null | grep 
 else
     echo "📥 Initializing database (fresh install)..."
     $mysql_cmd -e "DROP DATABASE IF EXISTS $DB_NAME; CREATE DATABASE $DB_NAME;"
-    $mysql_cmd $DB_NAME < "$TEMP_SQL"
+    $mysql_cmd "$DB_NAME" < "$TEMP_SQL"
     echo "✅ Database initialization completed."
 fi
 
