@@ -5,9 +5,6 @@ RUN apt-get update && apt-get install -y default-mysql-client && \
 
 COPY . /var/www/html/
 
-# حذف init.php إذا كان موجوداً (للتأكد)
-RUN rm -f /var/www/html/init.php
-
 RUN chmod +x /var/www/html/docker-entrypoint.sh
 
 ENTRYPOINT ["/var/www/html/docker-entrypoint.sh"]
