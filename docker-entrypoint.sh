@@ -23,8 +23,8 @@ sed -i 's/date NOT NULL DEFAULT current_timestamp()/date NOT NULL DEFAULT (CURRE
 # إصلاح time: replace DEFAULT current_timestamp() with DEFAULT "00:00:00"
 sed -i 's/time NOT NULL DEFAULT current_timestamp()/time NOT NULL DEFAULT "00:00:00"/g' "$TEMP_SQL"
 
-# إزالة أي عبارة USE database_name من الملف (لأننا سنحددها عبر سطر الأوامر)
-sed -i '/^USE /d' "$TEMP_SQL"
+# إزالة أي عبارة USE (بأي شكل) من الملف
+sed -i -E 's/^[[:space:]]*USE[[:space:]]+[`]?[a-zA-Z0-9_]+[`]?[[:space:]]*;//g' "$TEMP_SQL"
 
 mysql_cmd="mysql --host=$DB_HOST --port=$DB_PORT --user=$DB_USER --password=$DB_PASS --ssl-ca=$SSL_CA"
 
@@ -33,9 +33,10 @@ if $mysql_cmd -e "USE $DB_NAME; SHOW TABLES LIKE 'setting';" 2>/dev/null | grep 
     echo "✅ Database already initialized. Skipping import."
 else
     echo "📥 Initializing database (fresh install)..."
-    # حذف قاعدة البيانات وإنشاؤها من جديد (يتم الاتصال بقاعدة البيانات الافتراضية "information_schema" لهذا)
-    $mysql_cmd -e "DROP DATABASE IF EXISTS $DB_NAME; CREATE DATABASE $DB_NAME;"
+    # إنشاء قاعدة البيانات (مع تجاهل الأخطاء إن كانت موجودة)
+    $mysql_cmd -e "DROP DATABASE IF EXISTS $DB_NAME; CREATE DATABASE $DB_NAME;" 2>/dev/null
     echo "📤 Importing data..."
+    # استيراد البيانات (نمرر اسم قاعدة البيانات كوسيط)
     $mysql_cmd "$DB_NAME" < "$TEMP_SQL"
     echo "✅ Database initialization completed."
 fi
