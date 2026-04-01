@@ -10,28 +10,35 @@ SSL_CA="/var/www/html/database/ca.pem"
 SQL_FILE="/var/www/html/admin/System_backup_file/backup_system1740888810-c25239e543c4328636c1d292120d664e.sql"
 TEMP_SQL="/tmp/fixed.sql"
 
-# Create a working copy
 cp "$SQL_FILE" "$TEMP_SQL"
 
 echo "🔧 Fixing SQL file for MySQL 8.0 compatibility..."
 
-# Replace any DATE column with DEFAULT current_timestamp()
+# إصلاح datetime: replace DEFAULT current_timestamp() with DEFAULT CURRENT_TIMESTAMP
+sed -i 's/datetime NOT NULL DEFAULT current_timestamp()/datetime NOT NULL DEFAULT CURRENT_TIMESTAMP/g' "$TEMP_SQL"
+
+# إصلاح date: replace DEFAULT current_timestamp() with DEFAULT (CURRENT_DATE)
 sed -i 's/date NOT NULL DEFAULT current_timestamp()/date NOT NULL DEFAULT (CURRENT_DATE)/g' "$TEMP_SQL"
 
-# Replace any TIME column with DEFAULT current_timestamp()
+# إصلاح time: replace DEFAULT current_timestamp() with DEFAULT "00:00:00"
 sed -i 's/time NOT NULL DEFAULT current_timestamp()/time NOT NULL DEFAULT "00:00:00"/g' "$TEMP_SQL"
+
+# إزالة أي عبارة USE database_name من الملف (لأننا سنحددها عبر سطر الأوامر)
+sed -i '/^USE /d' "$TEMP_SQL"
 
 mysql_cmd="mysql --host=$DB_HOST --port=$DB_PORT --user=$DB_USER --password=$DB_PASS --ssl-ca=$SSL_CA"
 
-# Check if tables already exist
+# التحقق من وجود الجداول
 if $mysql_cmd -e "USE $DB_NAME; SHOW TABLES LIKE 'setting';" 2>/dev/null | grep -q setting; then
     echo "✅ Database already initialized. Skipping import."
 else
     echo "📥 Initializing database (fresh install)..."
+    # حذف قاعدة البيانات وإنشاؤها من جديد (يتم الاتصال بقاعدة البيانات الافتراضية "information_schema" لهذا)
     $mysql_cmd -e "DROP DATABASE IF EXISTS $DB_NAME; CREATE DATABASE $DB_NAME;"
-    $mysql_cmd $DB_NAME < "$TEMP_SQL"
+    echo "📤 Importing data..."
+    $mysql_cmd "$DB_NAME" < "$TEMP_SQL"
     echo "✅ Database initialization completed."
 fi
 
-# Start Apache
+# بدء Apache
 apache2-foreground
