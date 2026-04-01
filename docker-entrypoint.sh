@@ -8,28 +8,41 @@ DB_PASS="hCCzJBE3Ko33HuTW"
 DB_NAME="hospital_db"
 SSL_CA="/var/www/html/database/ca.pem"
 SQL_FILE="/var/www/html/admin/System_backup_file/backup_system1740888810-c25239e543c4328636c1d292120d664e.sql"
+TEMP_SQL="/tmp/fixed.sql"
 
-echo "🔌 Testing connection to TiDB Cloud..."
+cp "$SQL_FILE" "$TEMP_SQL"
+
+echo "🔧 Fixing SQL file for MySQL 8.0 compatibility..."
+
+# إصلاح القيم الافتراضية
+sed -i 's/datetime NOT NULL DEFAULT current_timestamp()/datetime NOT NULL DEFAULT CURRENT_TIMESTAMP/g' "$TEMP_SQL"
+sed -i 's/date NOT NULL DEFAULT current_timestamp()/date NOT NULL DEFAULT (CURRENT_DATE)/g' "$TEMP_SQL"
+sed -i 's/time NOT NULL DEFAULT current_timestamp()/time NOT NULL DEFAULT "00:00:00"/g' "$TEMP_SQL"
+
+# إزالة أي عبارة USE
+sed -i '/^USE /d' "$TEMP_SQL"
+
+# إصلاح التواريخ غير الصالحة (0000-00-00 00:00:00) -> CURRENT_TIMESTAMP
+sed -i "s/'0000-00-00 00:00:00'/CURRENT_TIMESTAMP()/g" "$TEMP_SQL"
+
 mysql_cmd="mysql --host=$DB_HOST --port=$DB_PORT --user=$DB_USER --password=$DB_PASS --ssl-ca=$SSL_CA"
 
-# اختبار الاتصال (سيظهر خطأ إن فشل)
+# اختبار الاتصال
 if ! $mysql_cmd -e "SELECT 1;" >/dev/null 2>&1; then
     echo "❌ Cannot connect to database. Please check credentials and SSL certificate."
     exit 1
 fi
 
-# إنشاء قاعدة البيانات (بدون تجاهل الأخطاء)
-echo "📦 Creating database $DB_NAME if it doesn't exist..."
+# إنشاء قاعدة البيانات إن لم تكن موجودة
 $mysql_cmd -e "CREATE DATABASE IF NOT EXISTS $DB_NAME;"
 
-# التحقق من وجود الجداول (عبر جدول setting)
+# التحقق من وجود الجداول
 if $mysql_cmd -e "USE $DB_NAME; SHOW TABLES LIKE 'setting';" | grep -q setting; then
     echo "✅ Database already initialized. Skipping import."
 else
     echo "📥 Importing data..."
-    $mysql_cmd "$DB_NAME" < "$SQL_FILE"
+    $mysql_cmd "$DB_NAME" < "$TEMP_SQL"
     echo "✅ Import completed."
 fi
 
-# بدء Apache
 apache2-foreground
