@@ -1,4 +1,4 @@
--- (المحتوى المعدل، بداية من أول سطر)
+-- (المحتوى المعدل بالكامل – يعمل مع MySQL 8.0)
 DROP TABLE IF EXISTS about_page;
 
 CREATE TABLE `about_page` (
@@ -53,7 +53,7 @@ CREATE TABLE `appointments` (
   `doctor_id` int(11) NOT NULL,
   `status` enum('confirmed','completed','cancel') NOT NULL DEFAULT 'confirmed',
   `appointment_date` date NOT NULL,
-  `appointment_time` time NOT NULL DEFAULT current_timestamp(),
+  `appointment_time` time NOT NULL DEFAULT "00:00:00",
   PRIMARY KEY (`app_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=112 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
@@ -70,8 +70,8 @@ CREATE TABLE `bed` (
   `bed_num` varchar(10) NOT NULL,
   `bed_type` varchar(10) NOT NULL,
   `description` text NOT NULL,
-  `created_at` date NOT NULL DEFAULT current_timestamp(),
-  `updated_at` date NOT NULL DEFAULT current_timestamp(),
+  `created_at` date NOT NULL DEFAULT (CURRENT_DATE),
+  `updated_at` date NOT NULL DEFAULT (CURRENT_DATE),
   PRIMARY KEY (`bed_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=33 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
@@ -88,8 +88,8 @@ CREATE TABLE `bed_allocate` (
   `bed_allocate_id` int(11) NOT NULL AUTO_INCREMENT,
   `bed_id` int(11) DEFAULT NULL,
   `pateint_id` int(11) DEFAULT NULL,
-  `allocated_at` datetime NOT NULL DEFAULT current_timestamp(),
-  `discharge` datetime NOT NULL DEFAULT current_timestamp(),
+  `allocated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `discharge` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`bed_allocate_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=19 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
@@ -221,7 +221,7 @@ CREATE TABLE `invoice` (
   `payment_method` enum('cash','card','online','insurance') NOT NULL DEFAULT 'cash',
   `amount` decimal(10,2) NOT NULL,
   `payment_status` enum('paid','unpaid') NOT NULL DEFAULT 'unpaid',
-  `invoice_date` datetime NOT NULL DEFAULT current_timestamp(),
+  `invoice_date` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`invoice_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=33 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
@@ -253,7 +253,7 @@ CREATE TABLE `medicine` (
   `price` varchar(255) NOT NULL,
   `description` text NOT NULL,
   `manufacuturin_company` varchar(255) NOT NULL,
-  `manufacuturin_date` date NOT NULL DEFAULT current_timestamp(),
+  `manufacuturin_date` date NOT NULL DEFAULT (CURRENT_DATE),
   `stock` int(11) NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -286,12 +286,12 @@ CREATE TABLE `notice_board` (
   `notice_id` int(11) NOT NULL AUTO_INCREMENT,
   `notice_title` varchar(255) NOT NULL,
   `notice` text NOT NULL,
-  `created_at` datetime NOT NULL DEFAULT current_timestamp(),
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`notice_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=17 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 INSERT INTO notice_board VALUES("15","Testing","Notice","2025-02-21 08:02:17");
-INSERT INTO notice_board VALUES("16","New Testsing","testing tesingtesting tesingtesting tesingtesting tesingtesting tesingtesting tesingtesting tesingtesting tesingtesting tesingtesting tesingtesting tesingtesting tesingtesting tesingtesting tesingtesting tesingtesting tesingtesting tesingtesting tesingtesting tesingtesting tesingtesting tesingtesting tesingtesting tesingtesting tesingtesting tesingtesting tesingtesting tesingtesting tesingtesting tesingtesting tesingtesting tesingtesting tesingtesting tesingtesting tesingtesting tesingtesting tesingtesting tesingtesting tesingtesting tesingtesting tesingtesting tesingtesting tesingtesting tesingtesting tesingtesting tesingtesting tesingtesting tesingtesting tesingtesting tesingtesting tesingtesting tesingtesting tesingtesting tesingtesting tesingtesting tesingtesting tesingtesting tesingtesting tesingtesting tesingtesting tesingtesting tesingtesting tesingtesting tesingtesting tesingtesting tesingtesting tesingtesting tesingtesting tesingtesting tesingtesting tesingtesting tesing","2025-02-21 08:10:39");
+INSERT INTO notice_board VALUES("16","New Testsing","testing tesingtesting tesingtesting tesingtesting tesingtesting tesingtesting tesingtesting tesingtesting tesingtesting tesingtesting tesingtesting tesingtesting tesingtesting tesingtesting tesingtesting tesingtesting tesingtesting tesingtesting tesingtesting tesingtesting tesingtesting tesingtesting tesingtesting tesingtesting tesingtesting tesingtesting tesingtesting tesingtesting tesingtesting tesingtesting tesingtesting tesingtesting tesingtesting tesingtesting tesingtesting tesingtesting tesingtesting tesingtesting tesingtesting tesingtesting tesingtesting tesingtesting tesingtesting tesingtesting tesingtesting tesingtesting tesingtesting tesingtesting tesingtesting tesingtesting tesingtesting tesingtesting tesingtesting tesingtesting tesingtesting tesingtesting tesingtesting tesingtesting tesingtesting tesingtesting tesingtesting tesingtesting tesingtesting tesingtesting tesingtesting tesingtesting tesingtesting tesingtesting tesingtesting tesingtesting tesing","2025-02-21 08:10:39");
 
 
 DROP TABLE IF EXISTS nurse;
@@ -371,7 +371,7 @@ CREATE TABLE `prescription` (
   `medication` text NOT NULL,
   `medication_form_pharamcist` text NOT NULL,
   `description` text NOT NULL,
-  `date` date NOT NULL DEFAULT current_timestamp(),
+  `date` date NOT NULL DEFAULT (CURRENT_DATE),
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=14 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
@@ -415,7 +415,7 @@ CREATE TABLE `report` (
   `rep_id` int(11) NOT NULL AUTO_INCREMENT,
   `report_type` enum('operation','birth','death','other') NOT NULL,
   `description` text NOT NULL,
-  `date` datetime NOT NULL DEFAULT current_timestamp(),
+  `date` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `doctor_id` int(11) NOT NULL,
   `patient_id` int(11) NOT NULL,
   PRIMARY KEY (`rep_id`)
