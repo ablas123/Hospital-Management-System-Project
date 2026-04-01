@@ -9,15 +9,27 @@ DB_NAME="hospital_db"
 SSL_CA="/var/www/html/database/ca.pem"
 SQL_FILE="/var/www/html/admin/System_backup_file/backup_system1740888810-c25239e543c4328636c1d292120d664e.sql"
 
+echo "🔌 Testing connection to TiDB Cloud..."
 mysql_cmd="mysql --host=$DB_HOST --port=$DB_PORT --user=$DB_USER --password=$DB_PASS --ssl-ca=$SSL_CA"
 
-if $mysql_cmd -e "USE $DB_NAME; SHOW TABLES LIKE 'setting';" 2>/dev/null | grep -q setting; then
-    echo "✅ Database already initialized."
+# اختبار الاتصال (سيظهر خطأ إن فشل)
+if ! $mysql_cmd -e "SELECT 1;" >/dev/null 2>&1; then
+    echo "❌ Cannot connect to database. Please check credentials and SSL certificate."
+    exit 1
+fi
+
+# إنشاء قاعدة البيانات (بدون تجاهل الأخطاء)
+echo "📦 Creating database $DB_NAME if it doesn't exist..."
+$mysql_cmd -e "CREATE DATABASE IF NOT EXISTS $DB_NAME;"
+
+# التحقق من وجود الجداول (عبر جدول setting)
+if $mysql_cmd -e "USE $DB_NAME; SHOW TABLES LIKE 'setting';" | grep -q setting; then
+    echo "✅ Database already initialized. Skipping import."
 else
-    echo "📥 Initializing database..."
-    $mysql_cmd -e "DROP DATABASE IF EXISTS $DB_NAME; CREATE DATABASE $DB_NAME;"
+    echo "📥 Importing data..."
     $mysql_cmd "$DB_NAME" < "$SQL_FILE"
     echo "✅ Import completed."
 fi
 
+# بدء Apache
 apache2-foreground
