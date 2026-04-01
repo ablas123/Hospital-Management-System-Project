@@ -1,10 +1,14 @@
 FROM php:8.2-apache
-RUN docker-php-ext-install mysqli pdo pdo_mysql
+
+# تثبيت عميل MySQL وملحقات PHP
+RUN apt-get update && apt-get install -y default-mysql-client && \
+    docker-php-ext-install mysqli pdo pdo_mysql
+
+# نسخ الملفات
 COPY . /var/www/html/
-RUN echo '#!/bin/bash\n\
-echo "Running database initialization..."\n\
-php /var/www/html/init.php\n\
-echo "Starting Apache..."\n\
-apache2-foreground' > /usr/local/bin/docker-entrypoint.sh && \
-    chmod +x /usr/local/bin/docker-entrypoint.sh
-ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
+
+# جعل سكريبت الدخول قابلاً للتنفيذ
+RUN chmod +x /var/www/html/docker-entrypoint.sh
+
+# تعيين نقطة الدخول
+ENTRYPOINT ["/var/www/html/docker-entrypoint.sh"]
